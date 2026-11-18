@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>המטלות שלי</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27><text y=%27.9em%27 font-size=%2790%27>🌸</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playpen+Sans+Hebrew:wght@400;700&display=swap">
+<style>
+:root{--bg:#F6E8E8;--card:#FBF3F3;--pink:#D9B4B4;--dusty:#B98A8F;--dark:#8E5A63;--cherry:#C94A6D;--cream:#F5EBDD;--red:#7A1F3D;--green:#6B7A3A;--green-l:#A3B27A;--text:#4A2A31;color-scheme:light}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:repeating-linear-gradient(0deg,rgba(238,190,198,.38) 0 28px,transparent 28px 56px),repeating-linear-gradient(90deg,rgba(238,190,198,.38) 0 28px,transparent 28px 56px),#FBF1E6;background-attachment:fixed;color:var(--text);font-family:"Playpen Sans Hebrew","Playpen Sans",Arial,sans-serif;padding:calc(14px + env(safe-area-inset-top)) 14px calc(30px + env(safe-area-inset-bottom));min-height:100vh}
+input,select,button,textarea{font-family:inherit}
+.wrap{max-width:900px;margin:0 auto}
+h1{font-size:1.2rem;font-weight:700;text-align:center;margin:0 auto 14px;width:fit-content;max-width:100%;color:var(--dark);background:rgba(251,243,243,.65);padding:6px 20px;border-radius:14px;backdrop-filter:blur(3px)}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.tab{border:1px solid var(--pink);background:var(--card);color:var(--dark);border-radius:16px;padding:12px 4px;font:700 .95rem "Playpen Sans Hebrew",Arial,sans-serif;cursor:pointer;aspect-ratio:1.3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.tab b{font-size:1.5rem}.tab.on{background:var(--dark);border-color:var(--dark);color:#fff}
+.cat{font-weight:700;font-size:1rem;color:var(--dark);margin:18px 4px 8px}
+.t{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--pink);border-radius:16px;padding:12px;margin-bottom:8px;transition:opacity .45s,transform .45s,max-height .45s;max-height:200px}
+.t.hot{background:var(--red);color:#fff;border-color:var(--red)}
+.t.hot small{color:#E8C9D1}
+.t.gone{opacity:0;transform:translateX(-30px);max-height:0;padding-block:0;margin:0;overflow:hidden}
+.t input[type=checkbox]{width:24px;height:24px;accent-color:var(--cherry);flex:none;margin-top:2px}
+.t div{flex:1;min-width:0}.t b{font-weight:700;display:block;overflow-wrap:anywhere}
+small{display:block;color:var(--dusty);font-size:.78rem;margin-top:2px}
+.x{background:none;border:0;color:var(--dusty);font-size:1.1rem;cursor:pointer;padding:0 4px}
+.box{background:var(--card);border:1px solid var(--pink);border-radius:16px;padding:12px;margin-bottom:14px}
+input[type=text],input[type=date],select,textarea{width:100%;font-size:1rem;padding:10px;border:1px solid var(--dusty);border-radius:10px;background:#fff;color:var(--text);margin-bottom:8px}
+.btn{border:0;background:var(--red);color:#fff;font-size:1.05rem;border-radius:14px;padding:13px 16px;cursor:pointer;width:100%}
+.btn.ghost{background:var(--card);color:var(--dark);border:1px solid var(--dusty)}
+.empty{text-align:center;color:var(--dusty);font-size:.9rem;padding:28px 8px}
+.sum{border-radius:16px;padding:14px;margin-top:20px}
+.sum.ok{background:#E4EBCB;color:var(--green);border:1px solid var(--green-l)}.sum.left{background:#EBC9D1;color:var(--red);border:1px solid var(--dusty)}
+.sum h3{margin:0 0 8px;font-size:1rem}.sum li{margin:3px 0}.sum ul{margin:0;padding-inline-start:20px}
+.foot{margin-top:26px}
+.pick{display:flex;gap:10px;align-items:center;padding:8px 2px;font-size:.95rem}.pick input{width:22px;height:22px;accent-color:var(--cherry);margin:0}
+.sync{font-size:.75rem;color:var(--dusty);text-align:center;margin-top:10px}
+@media (prefers-reduced-motion:reduce){.t{transition:none}}
+header{position:relative;display:flex;justify-content:center;align-items:center;min-height:44px;margin-bottom:14px}
+header h1{margin:0}
+.plus{position:absolute;right:0;top:0;border:0;border-radius:50%;width:44px;height:44px;font-size:1.8rem;line-height:1;color:#fff;background:var(--green);cursor:pointer}
+ul.bl{margin:0;padding:0 22px 0 0;list-style:disc}
+ul.bl li{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--pink);display:list-item}
+ul.bl li:last-child{border-bottom:0}
+ul.bl li::marker{color:var(--cherry)}
+.li{display:flex;align-items:flex-start;gap:8px}.li div{flex:1;min-width:0;overflow-wrap:anywhere}
+.li.hot b{color:var(--red)}.li.hot small.d{color:var(--red);font-weight:700}
+dialog{border:0;border-radius:16px;background:var(--card);color:var(--text);width:min(92vw,380px);padding:18px}
+dialog::backdrop{background:rgba(74,42,49,.4)}
+dialog label{display:block;font-size:.85rem;margin:10px 0 3px;color:var(--dark)}
+.btns{display:flex;gap:8px;margin-top:14px}.btns button{flex:1;padding:10px;border-radius:10px;border:0;font:inherit;cursor:pointer}
+.okb{background:var(--dark);color:#fff}.nob{background:var(--pink);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><button class="plus" id="plus" aria-label="הוספת משימה">+</button><h1 id="hi">המטלות שלי</h1></header>
+<div class="tabs" id="tabs"></div>
+<div id="view"></div>
+<dialog id="dlg"><b>משימה חדשה</b>
+<label for="nt">שם המשימה</label><input type="text" id="nt" maxlength="120">
+<label for="nc">קורס / קטגוריה</label><select id="nc"></select>
+<label for="nd">תאריך יעד (אופציונלי)</label><input type="date" id="nd">
+<label for="ndesc">תיאור (אופציונלי)</label><textarea id="ndesc" rows="2"></textarea>
+<div class="btns"><button class="nob" id="cancel">ביטול</button><button class="okb" id="add">הוספה</button></div></dialog>
+<div class="foot"><button class="btn ghost" id="editCats">עריכת קטגוריות</button></div>
+<div class="sync" id="sync"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+// ===== הדביקו כאן את הגדרות Firebase שלכם (ראו מדריך). אם ריק – האתר עובד עם שמירה מקומית בלבד =====
+const FIREBASE_CONFIG = {
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  appId: ""
+};
+// ===================================================================================================
+
+let S = { cats: ["כללי"], tasks: [] };
+let tab = "all", picking = false, editing = false, ref = null;
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const todayStart = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
+const weekStart = () => { const d = todayStart(); d.setDate(d.getDate() - d.getDay()); return d; }; // ראשון
+const iso = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+
+// ---------- שמירה וטעינה ----------
+try { const l = localStorage.getItem("tasks-state"); if (l) S = JSON.parse(l); } catch (e) {}
+function save() {
+  try { localStorage.setItem("tasks-state", JSON.stringify(S)); } catch (e) {}
+  if (ref) ref.set(S).then(() => $("sync").textContent = "נשמר בענן ☁️").catch(() => $("sync").textContent = "שגיאת סנכרון – נשמר מקומית");
+}
+if (FIREBASE_CONFIG.projectId && window.firebase) {
+  firebase.initializeApp(FIREBASE_CONFIG);
+  ref = firebase.firestore().collection("app").doc("state");
+  ref.onSnapshot(s => {
+    if (s.exists) { S = s.data(); try { localStorage.setItem("tasks-state", JSON.stringify(S)); } catch (e) {} render(); }
+    else ref.set(S);
+    $("sync").textContent = "מחובר לענן ☁️";
+  }, () => $("sync").textContent = "אין חיבור לענן – עובד מקומית");
+} else $("sync").textContent = "שמירה מקומית בלבד (Firebase לא הוגדר)";
+
+// ---------- עזרים ----------
+const open = () => S.tasks.filter(t => !t.done);
+const pool = () => tab === "all" ? open() : tab === "week" ? open() : open().filter(t => t.weekly);
+function fmtDue(d) { const [y, m, dd] = d.split("-"); return `${dd}/${m}/${y}`; }
+function isHot(t) { if (!t.due) return false; const diff = (new Date(t.due + "T00:00:00") - todayStart()) / 864e5; return diff < 2; }
+
+function row(t, withDel) {
+  return `<div class="t ${isHot(t) ? "hot" : ""}" data-id="${t.id}">
+    <input type="checkbox" data-done="${t.id}" aria-label="סימון כבוצע">
+    <div><b>${esc(t.title)}</b>${t.desc ? `<small>${esc(t.desc)}</small>` : ""}${t.due ? `<small>📅 ${fmtDue(t.due)}</small>` : ""}</div>
+    ${withDel ? `<button class="x" data-del="${t.id}" aria-label="מחיקה">✕</button>` : ""}</div>`;
+}
+function grouped(list, withDel, byCat = true) {
+  if (!list.length) return `<div class="empty">אין כאן משימות 🌿</div>`;
+  const names = [...S.cats, ...new Set(list.map(t => t.cat).filter(c => !S.cats.includes(c)))];
+  let h = "";
+  names.forEach(c => { const l = list.filter(t => t.cat === c); if (l.length) h += `<div class="cat">${esc(c)}</div>` + l.map(t => row(t, withDel)).join(""); });
+  return h;
+}
+
+// ---------- תצוגות ----------
+function renderAll() {
+  const list = open();
+  if (!list.length) return `<div class="empty">אין משימות עדיין – לחצו על + להוספה 🌸</div>`;
+  const names = [...S.cats, ...new Set(list.map(t => t.cat).filter(c => !S.cats.includes(c)))];
+  let h = "";
+  names.forEach(c => { const l = list.filter(t => t.cat === c); if (l.length) h += `<div class="cat">${esc(c)}</div><div class="box"><ul class="bl">` + l.map(t => `<li><div class="li ${isHot(t) ? "hot" : ""}"><div><b>${esc(t.title)}</b>${t.desc ? `<small>${esc(t.desc)}</small>` : ""}${t.due ? `<small class="d">📅 ${fmtDue(t.due)}</small>` : ""}</div><button class="x" data-del="${t.id}" aria-label="מחיקה">✕</button></div></li>`).join("") + `</ul></div>`; });
+  return h;
+}
+function picker(source, key, label) {
+  const all = source();
+  let h = `<button class="btn ghost" id="togglePick">${picking ? "סיום בחירה" : label}</button>`;
+  if (picking) {
+    h += `<div class="box" style="margin-top:12px">` + (all.length ? all.map(t => `<label class="pick"><input type="checkbox" data-pick="${t.id}" ${t[key] ? "checked" : ""}>${esc(t.title)} <small style="display:inline;margin:0">(${esc(t.cat)})</small></label>`).join("") : `<div class="empty">אין משימות לבחירה</div>`) + `</div>`;
+  }
+  return h;
+}
+function renderWeek() {
+  const list = open().filter(t => t.weekly);
+  const ws = weekStart().getTime();
+  const done = S.tasks.filter(t => t.done && t.doneAt >= ws);
+  const msgs = ["כל הכבוד! 🌟", "וואו, איזה קצב! 💪", "את/ה מדהים/ה, ממשיכים! 🎉", "כל משימה היא צעד קדימה ✨"];
+  const good = done.length ? `<div class="sum ok"><h3>${msgs[done.length % msgs.length]} סיימת השבוע ${done.length}</h3><ul>${done.map(t => `<li>${esc(t.title)}</li>`).join("")}</ul></div>` : `<div class="sum ok"><h3>שבוע חדש, התחלה חדשה 🌱</h3>עוד לא סומנו משימות – הצעד הראשון הכי קל.</div>`;
+  const left = list.length ? `<div class="sum left"><h3>נותרו להשבוע: ${list.length}</h3><ul>${list.map(t => `<li>${esc(t.title)}</li>`).join("")}</ul></div>` : "";
+  return picker(open, "weekly", "בחירת משימות לשבוע") + (picking ? "" : grouped(list, false)) + good + left;
+}
+function renderDay() {
+  const list = open().filter(t => t.daily).sort((a, b) => a.dailyAt - b.dailyAt);
+  return picker(() => open().filter(t => t.weekly), "daily", "בחירת משימות להיום") + (picking ? "" : (list.length ? list.map(t => row(t, false)).join("") : `<div class="empty">לא נבחרו משימות להיום ☀️</div>`));
+}
+function render() {
+  const d = new Date();
+  $("hi").textContent = "המטלות שלי · " + d.toLocaleDateString("he-IL", { weekday: "long", day: "numeric", month: "long" });
+  const o = open();
+  const T = [["all", "כלליות", o.length], ["week", "שבועיות", o.filter(t => t.weekly).length], ["day", "יומיות", o.filter(t => t.daily).length]];
+  $("tabs").innerHTML = T.map(([k, n, c]) => `<button class="tab ${tab === k ? "on" : ""}" data-tab="${k}"><b>${c}</b>${n}</button>`).join("");
+  $("view").innerHTML = tab === "all" ? renderAll() : tab === "week" ? renderWeek() : renderDay();
+}
+
+// ---------- אירועים ----------
+document.addEventListener("click", e => {
+  const g = e.target;
+  if (g.dataset.tab) { tab = g.closest("[data-tab]").dataset.tab; picking = false; render(); }
+  else if (g.closest("[data-tab]")) { tab = g.closest("[data-tab]").dataset.tab; picking = false; render(); }
+  else if (g.id === "plus") { $("nc").innerHTML = S.cats.map(c => `<option>${esc(c)}</option>`).join(""); $("nt").value = $("nd").value = $("ndesc").value = ""; $("dlg").showModal(); }
+  else if (g.id === "cancel") $("dlg").close();
+  else if (g.id === "add") {
+    const title = $("nt").value.trim(); if (!title) { $("nt").focus(); return; }
+    $("dlg").close();
+    S.tasks.push({ id: Date.now() + "" + Math.floor(Math.random() * 99), title, cat: $("nc").value, due: $("nd").value || "", desc: $("ndesc").value.trim(), done: false, weekly: false, daily: false });
+    save(); render();
+  }
+  else if (g.dataset.del) { if (confirm("למחוק את המשימה?")) { S.tasks = S.tasks.filter(t => t.id !== g.dataset.del); save(); render(); } }
+  else if (g.id === "togglePick") { picking = !picking; render(); }
+  else if (g.id === "editCats") editCats();
+});
+document.addEventListener("change", e => {
+  const g = e.target;
+  if (g.dataset.done) {
+    const el = g.closest(".t"); el.classList.add("gone");
+    setTimeout(() => { const t = S.tasks.find(x => x.id === g.dataset.done); if (t) { t.done = true; t.doneAt = Date.now(); t.weekly = t.daily = false; } save(); render(); }, 460);
+  } else if (g.dataset.pick) {
+    const t = S.tasks.find(x => x.id === g.dataset.pick); const key = tab === "week" ? "weekly" : "daily";
+    t[key] = g.checked;
+    if (key === "daily") { if (g.checked) t.dailyAt = Date.now(); }
+    if (key === "weekly" && !g.checked) t.daily = false;
+    save(); render();
+    if (picking) window.scrollTo({ top: window.scrollY });
+  }
+});
+
+// ---------- עריכת קטגוריות ----------
+function editCats() {
+  tab = "all"; picking = false; render();
+  $("view").innerHTML = `<div class="box"><b>עריכת קטגוריות</b><div id="cl" style="margin:10px 0">${S.cats.map((c, i) => `<div class="pick"><span style="flex:1">${esc(c)}</span><button class="x" data-rc="${i}">✕</button></div>`).join("")}</div>
+    <input type="text" id="nc2" placeholder="שם קורס / קטגוריה חדשה" maxlength="40"><button class="btn" id="addc">הוספה</button>
+    <button class="btn ghost" id="back" style="margin-top:8px">חזרה</button></div>`;
+  $("addc").onclick = () => { const v = $("nc2").value.trim(); if (v && !S.cats.includes(v)) { S.cats.push(v); save(); editCats(); } };
+  $("back").onclick = render;
+  document.querySelectorAll("[data-rc]").forEach(b => b.onclick = () => { if (confirm("למחוק את הקטגוריה? המשימות שלה יישארו.")) { S.cats.splice(+b.dataset.rc, 1); save(); editCats(); } });
+}
+
+// עדכון כשחוזרים לאפליקציה (יום/שבוע חדש)
+document.addEventListener("visibilitychange", () => { if (!document.hidden && !editing) render(); });
+render();
+</script>
+</body>
+</html>
