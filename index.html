@@ -26,7 +26,7 @@ h1{font-size:1.2rem;font-weight:700;text-align:center;margin:0 auto 14px;width:f
 small{display:block;color:var(--dusty);font-size:.78rem;margin-top:2px}
 .x{background:none;border:0;color:var(--dusty);font-size:1.1rem;cursor:pointer;padding:0 4px}
 .box{background:var(--card);border:1px solid var(--pink);border-radius:16px;padding:12px;margin-bottom:14px}
-input[type=text],input[type=date],select,textarea{width:100%;font-size:1rem;padding:10px;border:1px solid var(--dusty);border-radius:10px;background:#fff;color:var(--text);margin-bottom:8px}
+input[type=text],input[type=date],input[type=number],select,textarea{width:100%;font-size:1rem;padding:10px;border:1px solid var(--dusty);border-radius:10px;background:#fff;color:var(--text);margin-bottom:8px}
 .btn{border:0;background:var(--red);color:#fff;font-size:1.05rem;border-radius:14px;padding:13px 16px;cursor:pointer;width:100%}
 .btn.ghost{background:var(--card);color:var(--dark);border:1px solid var(--dusty)}
 .empty{text-align:center;color:var(--dusty);font-size:.9rem;padding:28px 8px}
@@ -72,6 +72,19 @@ dialog label{display:block;font-size:.85rem;margin:10px 0 3px;color:var(--dark)}
  ul.bl li:hover{transform:translateX(-4px);transition:transform .2s}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.main{display:flex;gap:12px;align-items:flex-start;min-width:0}
+.main>div{flex:1;min-width:0}
+.t.hasm{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
+.t.hasm .main{align-items:center}
+.tm{font-size:.8rem;font-weight:700;background:rgba(217,180,180,.38);color:var(--dark);border-radius:20px;padding:2px 10px;white-space:nowrap;justify-self:center;align-self:center}
+.t.hot .tm{background:rgba(255,255,255,.2);color:#fff}
+.li.hasm{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
+.act{display:flex;justify-self:end;gap:2px}
+.t.hasm>div:last-child,.t .x{justify-self:end}
+.unit{position:relative}
+.unit input{padding-left:46px;margin-bottom:8px;-moz-appearance:textfield}
+.unit input::-webkit-outer-spin-button,.unit input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.unit span{position:absolute;left:14px;top:50%;transform:translateY(-50%);margin-top:-4px;font-size:.9rem;color:var(--dusty);pointer-events:none}
 </style>
 </head>
 <body>
@@ -83,6 +96,7 @@ dialog label{display:block;font-size:.85rem;margin:10px 0 3px;color:var(--dark)}
 <label for="nt">שם המשימה</label><input type="text" id="nt" maxlength="120">
 <label for="nc">קורס / קטגוריה</label><select id="nc"></select>
 <label for="nd">תאריך יעד (אופציונלי)</label><input type="date" id="nd">
+<label for="nm">סדר גודל זמן</label><div class="unit"><input type="number" id="nm" min="1" max="999" inputmode="numeric" placeholder="אופציונלי"><span>דק'</span></div>
 <label for="ndesc">תיאור (אופציונלי)</label><textarea id="ndesc" rows="2"></textarea>
 <div class="btns"><button class="nob" id="cancel">ביטול</button><button class="okb" id="add">הוספה</button></div></dialog>
 <div class="foot"><button class="btn ghost" id="editCats">עריכת קטגוריות</button></div>
@@ -156,11 +170,21 @@ const pool = () => tab === "all" ? open() : tab === "week" ? open() : open().fil
 function fmtDue(d) { const [y, m, dd] = d.split("-"); return `${dd}/${m}/${y}`; }
 function isHot(t) { if (!t.due) return false; const diff = (new Date(t.due + "T00:00:00") - todayStart()) / 864e5; return diff < 2; }
 
+const tmBadge = t => t.mins ? `<span class="tm">${t.mins} דק'</span>` : "";
 function row(t, withDel) {
-  return `<div class="t ${isHot(t) ? "hot" : ""}" data-id="${t.id}">${BOW}
-    <input type="checkbox" data-done="${t.id}" aria-label="סימון כבוצע">
-    <div><b>${esc(t.title)}</b>${t.desc ? `<small>${esc(t.desc)}</small>` : ""}${t.due ? `<small>📅 ${fmtDue(t.due)}</small>` : ""}</div>
+  return `<div class="t ${isHot(t) ? "hot" : ""} ${t.mins ? "hasm" : ""}" data-id="${t.id}">${BOW}
+    <div class="main"><input type="checkbox" data-done="${t.id}" aria-label="סימון כבוצע">
+    <div><b>${esc(t.title)}</b>${t.desc ? `<small>${esc(t.desc)}</small>` : ""}${t.due ? `<small>📅 ${fmtDue(t.due)}</small>` : ""}</div></div>${tmBadge(t)}
     ${withDel ? `<button class="x" data-del="${t.id}" aria-label="מחיקה">✕</button>` : ""}</div>`;
+}
+// דחיפות לפי תאריך יעד בבחירת משימות: key = weekly (עד סוף השבוע) / daily (היום או מחר)
+function urgency(t, key) {
+  if (!t.due) return null;
+  const d = Math.round((new Date(t.due + "T00:00:00") - todayStart()) / 864e5);
+  const limit = key === "weekly" ? 6 - todayStart().getDay() : 0; // שבועי: עד סוף השבוע, יומי: היום (וגם באיחור)
+  if (d > limit) return null;
+  const txt = d < 0 ? "באיחור" : d === 0 ? "היום" : d === 1 ? "נשאר יום אחד" : `נשארו ${d} ימים`;
+  return { style: "color:#7A1F3D;font-weight:700", txt };
 }
 function grouped(list, withDel, byCat = true) {
   if (!list.length) return `<div class="empty">אין כאן משימות 🌿</div>`;
@@ -176,7 +200,7 @@ function renderAll() {
   if (!list.length) return `<div class="empty">אין משימות עדיין – לחצו על + להוספה 🌷</div>`;
   const names = [...S.cats, ...new Set(list.map(t => t.cat).filter(c => !S.cats.includes(c)))];
   let h = "";
-  names.forEach(c => { const l = list.filter(t => t.cat === c).sort(byTitle); if (l.length) h += `<div class="cat">${esc(c)}</div><div class="box bw">${BOW}<ul class="bl">` + l.map(t => `<li><div class="li ${isHot(t) ? "hot" : ""}"><div><b>${esc(t.title)}</b>${t.desc ? `<small>${esc(t.desc)}</small>` : ""}${t.due ? `<small class="d">📅 ${fmtDue(t.due)}</small>` : ""}</div><button class="x" data-edit="${t.id}" aria-label="עריכה">✎</button><button class="x" data-del="${t.id}" aria-label="מחיקה">✕</button></div></li>`).join("") + `</ul></div>`; });
+  names.forEach(c => { const l = list.filter(t => t.cat === c).sort(byTitle); if (l.length) h += `<div class="cat">${esc(c)}</div><div class="box bw">${BOW}<ul class="bl">` + l.map(t => `<li><div class="li ${isHot(t) ? "hot" : ""} ${t.mins ? "hasm" : ""}"><div class="mn"><b>${esc(t.title)}</b>${t.desc ? `<small>${esc(t.desc)}</small>` : ""}${t.due ? `<small class="d">📅 ${fmtDue(t.due)}</small>` : ""}</div>${tmBadge(t)}<span class="act"><button class="x" data-edit="${t.id}" aria-label="עריכה">✎</button><button class="x" data-del="${t.id}" aria-label="מחיקה">✕</button></span></div></li>`).join("") + `</ul></div>`; });
   return h;
 }
 function picker(source, key, label) {
@@ -184,9 +208,9 @@ function picker(source, key, label) {
   let h = `<button class="btn ghost" id="togglePick">${picking ? "סיום בחירה" : label}</button>`;
   if (picking) {
     h += `<div class="box" style="margin-top:12px">`;
-    if (!all.length) h += `<div class="empty">אין משימות לבחירה</div>`;
+    if (!all.length) h += `<div class="empty">${tab === "day" ? "אין משימות שבועיות" : "אין משימות"} 🫧</div>`;
     const names = [...S.cats, ...new Set(all.map(t => t.cat).filter(c => !S.cats.includes(c)))];
-    names.forEach(c => { const l = all.filter(t => t.cat === c).sort(byTitle); if (l.length) h += `<div class="cat" style="margin:10px 2px 2px">${esc(c)}</div>` + l.map(t => `<label class="pick"><input type="checkbox" data-pick="${t.id}" ${t[key] ? "checked" : ""}>${esc(t.title)}</label>`).join(""); });
+    names.forEach(c => { const l = all.filter(t => t.cat === c).sort(byTitle); if (l.length) h += `<div class="cat" style="margin:10px 2px 2px">${esc(c)}</div>` + l.map(t => { const u = urgency(t, key); return `<label class="pick"><input type="checkbox" data-pick="${t.id}" ${t[key] ? "checked" : ""}><span${u ? ` style="${u.style}"` : ""}>${esc(t.title)}</span>${u ? `<small style="display:inline;margin:0 4px;${u.style}">(${u.txt})</small>` : ""}${t.mins ? `<small style="display:inline;margin:0 4px">· ${t.mins} דק'</small>` : ""}</label>`; }).join(""); });
     h += `</div>`;
   }
   return h;
@@ -198,11 +222,11 @@ function renderWeek() {
   const msgs = ["כל הכבוד! 🌟", "וואו, איזה קצב! 💪", "את/ה מדהים/ה, ממשיכים! 🎉", "כל משימה היא צעד קדימה ✨"];
   const good = done.length ? `<div class="sum ok"><h3>${msgs[done.length % msgs.length]} סיימת השבוע ${done.length}</h3><ul>${done.map(t => `<li>${esc(t.title)}</li>`).join("")}</ul></div>` : `<div class="sum ok"><h3>שבוע חדש, התחלה חדשה 🌱</h3>עוד לא סומנו משימות – הצעד הראשון הכי קל.</div>`;
   const left = list.length ? `<div class="sum left"><h3>נותרו להשבוע: ${list.length}</h3><ul>${list.map(t => `<li>${esc(t.title)}</li>`).join("")}</ul></div>` : "";
-  return picker(open, "weekly", "בחירת משימות לשבוע") + (picking ? "" : grouped(list, false)) + good + left;
+  return picker(open, "weekly", "בחירת משימות לשבוע") + (picking ? "" : (list.length ? grouped(list, false) : `<div class="empty">${open().length ? "לא נבחרו משימות לשבוע" : "אין משימות"} 🫧</div>`)) + good + left;
 }
 function renderDay() {
   const list = open().filter(t => t.daily).sort((a, b) => a.dailyAt - b.dailyAt);
-  return picker(() => open().filter(t => t.weekly), "daily", "בחירת משימות להיום") + (picking ? "" : (list.length ? list.map(t => row(t, false)).join("") : `<div class="empty">לא נבחרו משימות להיום ☀️</div>`));
+  return picker(() => open().filter(t => t.weekly), "daily", "בחירת משימות להיום") + (picking ? "" : (list.length ? list.map(t => row(t, false)).join("") : `<div class="empty">${open().some(t => t.weekly) ? "לא נבחרו משימות להיום ☀️" : "אין משימות שבועיות 🫧"}</div>`));
 }
 function render() {
   S.cats.sort(heSort);
@@ -219,13 +243,13 @@ document.addEventListener("click", e => {
   const g = e.target;
   if (g.dataset.tab) { tab = g.closest("[data-tab]").dataset.tab; picking = false; render(); }
   else if (g.closest("[data-tab]")) { tab = g.closest("[data-tab]").dataset.tab; picking = false; render(); }
-  else if (g.id === "plus") { editId = null; $("dtitle").textContent = "משימה חדשה"; $("add").textContent = "הוספה"; S.cats.sort(heSort); $("nc").innerHTML = S.cats.map(c => `<option>${esc(c)}</option>`).join(""); $("nt").value = $("nd").value = $("ndesc").value = ""; $("dlg").showModal(); }
+  else if (g.id === "plus") { editId = null; $("dtitle").textContent = "משימה חדשה"; $("add").textContent = "הוספה"; S.cats.sort(heSort); $("nc").innerHTML = S.cats.map(c => `<option>${esc(c)}</option>`).join(""); $("nt").value = $("nd").value = $("ndesc").value = $("nm").value = ""; $("dlg").showModal(); }
   else if (g.dataset.edit) {
     const t = S.tasks.find(x => x.id === g.dataset.edit); if (!t) return;
     editId = t.id; S.cats.sort(heSort);
     const cats = S.cats.includes(t.cat) ? S.cats : [...S.cats, t.cat];
     $("nc").innerHTML = cats.map(c => `<option>${esc(c)}</option>`).join("");
-    $("nt").value = t.title; $("nc").value = t.cat; $("nd").value = t.due || ""; $("ndesc").value = t.desc || "";
+    $("nt").value = t.title; $("nc").value = t.cat; $("nd").value = t.due || ""; $("ndesc").value = t.desc || ""; $("nm").value = t.mins || "";
     $("dtitle").textContent = "עריכת משימה"; $("add").textContent = "שמירה"; $("dlg").showModal();
   }
   else if (g.id === "cancel") $("dlg").close();
@@ -234,11 +258,11 @@ document.addEventListener("click", e => {
     $("dlg").close();
     if (editId) {
       const t = S.tasks.find(x => x.id === editId);
-      if (t) { t.title = title; t.cat = $("nc").value; t.due = $("nd").value || ""; t.desc = $("ndesc").value.trim(); }
+      if (t) { t.title = title; t.cat = $("nc").value; t.due = $("nd").value || ""; t.desc = $("ndesc").value.trim(); t.mins = parseInt($("nm").value) || 0; }
       editId = null; save(); render(); return;
     }
     const ac = autoCat(title, $("nc").value);
-    S.tasks.push({ id: Date.now() + "" + Math.floor(Math.random() * 99), title: ac.title, cat: ac.cat, due: $("nd").value || "", desc: $("ndesc").value.trim(), done: false, weekly: false, daily: false });
+    S.tasks.push({ id: Date.now() + "" + Math.floor(Math.random() * 99), title: ac.title, cat: ac.cat, mins: parseInt($("nm").value) || 0, due: $("nd").value || "", desc: $("ndesc").value.trim(), done: false, weekly: false, daily: false });
     save(); render();
   }
   else if (g.dataset.del) { if (confirm("למחוק את המשימה?")) { S.tasks = S.tasks.filter(t => t.id !== g.dataset.del); save(); render(); } }
