@@ -103,12 +103,18 @@ dialog{max-height:90vh;overflow:auto}
 .dc{font-size:.72rem;font-weight:700;border-radius:20px;padding:2px 8px;white-space:nowrap}
 .dc.mid{background:rgba(217,180,180,.5);color:var(--dark)}.dc.final{background:rgba(201,74,109,.18);color:var(--red)}
 .csum{background:#FDF8EE;border:1px solid var(--pink);border-radius:12px;padding:6px 10px;margin:10px 0}
-.srow{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--pink)}.srow:last-child{border-bottom:0}
-.srow b{font-weight:700;color:var(--dark);white-space:nowrap}.srow b small{font-size:.68rem}.srow .mid2{display:flex;gap:8px;justify-content:center}.srow .m{width:44px;text-align:center}.srow .m.c{width:auto;min-width:56px}.srow .lft{display:flex;justify-content:flex-end;gap:6px}.srow .pc{width:48px}.srow .pc{text-align:left;font-weight:700;color:var(--dark)}
+.srow{display:grid;grid-template-columns:minmax(0,1fr) 54px minmax(max-content,1fr);gap:6px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--pink)}.srow:last-child{border-bottom:0}
+.srow b{font-weight:700;color:var(--dark)}.srow b small{font-size:.68rem}.srow .mid2{display:flex;gap:8px;justify-content:center}.srow .m{width:40px;text-align:center}.srow .m.c{width:auto;min-width:0}.srow .lft{display:flex;justify-content:flex-end;gap:4px;white-space:nowrap}.srow .pc{width:46px}.srow .pc{text-align:left;font-weight:700;color:var(--dark)}
 .cur{font-size:.9rem;margin:6px 2px}.cur small{display:inline;color:var(--dusty)}
 details{font-size:.85rem;color:var(--dusty)}summary{cursor:pointer;padding:4px 2px}
 details li{display:flex;justify-content:space-between;align-items:center;list-style:none;color:var(--text)}details ul{padding:0;margin:4px 0}
 .ptitle{font-size:1rem;font-weight:700;text-align:center;width:fit-content;margin:4px auto 28px;color:var(--dark);background:rgba(251,243,243,.65);padding:6px 22px;border-radius:14px;backdrop-filter:blur(3px)}
+.cc{border:1px solid var(--pink);border-radius:12px;padding:8px;margin-bottom:8px;background:#fff}
+.cc .lbl{display:flex;gap:6px;align-items:center;margin-bottom:6px;color:var(--dark);font-weight:700}
+.cc .lbl .cnm{margin:0;flex:1}.cc .in{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.cc .unit{width:96px;flex:none}.cc .unit.w{width:124px}
+.mini{width:30px;height:30px;border-radius:50%;border:0;background:var(--green);color:#fff;font-size:1.2rem;line-height:1;cursor:pointer;flex:none}
+.addrow{display:flex;align-items:center;gap:8px;color:var(--dark);font-size:.9rem;margin:6px 0}
 </style>
 </head>
 <body>
@@ -126,10 +132,8 @@ details li{display:flex;justify-content:space-between;align-items:center;list-st
 <dialog id="cdlg"><b id="cdt">קורס חדש</b>
 <label for="cn">שם הקורס</label><input type="text" id="cn" maxlength="40">
 <label>אחוז מהציון הסופי (0 = לא קיים בקורס)</label>
-<div class="crow"><span>מבחן סוף</span><div class="in"><div class="unit"><input type="number" id="cw_final" min="0" max="100" inputmode="numeric" placeholder="0"><span>%</span></div></div></div>
-<div class="crow"><span>מבחן אמצע</span><div class="in"><div class="unit"><input type="number" id="cw_mid" min="0" max="100" inputmode="numeric" placeholder="0"><span>%</span></div><label class="sh"><input type="checkbox" id="c_shield">מגן</label></div></div>
-<div class="crow"><span>שיעורי בית</span><div class="in"><div class="unit"><input type="number" id="cw_hw" min="0" max="100" inputmode="numeric" placeholder="0"><span>%</span></div><div class="unit w"><input type="number" id="cn_hw" min="0" max="99" inputmode="numeric" placeholder="0"><span>עבודות</span></div></div></div>
-<div class="crow"><span>פרויקטים / מעבדות</span><div class="in"><div class="unit"><input type="number" id="cw_proj" min="0" max="100" inputmode="numeric" placeholder="0"><span>%</span></div><div class="unit w"><input type="number" id="cn_proj" min="0" max="99" inputmode="numeric" placeholder="0"><span>עבודות</span></div></div></div>
+<div id="ccomps"></div>
+<div class="addrow"><button class="mini" type="button" id="addComp" aria-label="הוספת סוג ציון">+</button><span>הוספת סוג ציון</span></div>
 <small id="csumv"></small>
 <div class="btns"><button class="nob" id="ccancel">ביטול</button><button class="okb" id="csave">שמירה</button></div></dialog>
 <dialog id="gdlg"><b>הוספת ציון</b>
@@ -205,36 +209,51 @@ if (FIREBASE_CONFIG.projectId && window.firebase) {
 } else $("sync").textContent = "שמירה מקומית בלבד (Firebase לא הוגדר)";
 
 // ---------- ציונים ----------
-const GL = { final: "מבחן סוף", mid: "מבחן אמצע", hw: "שיעורי בית", proj: "פרויקטים/מעבדות" };
-function ensure() { if (!Array.isArray(S.courses)) S.courses = []; }
+function ensure() { if (!Array.isArray(S.courses)) S.courses = []; S.courses.forEach(norm); }
+function norm(c) {
+  if (c.comps) return;
+  const w = c.w || {}, n = c.n || {}; c.g = c.g || {}; c.d = c.d || { mid: "", final: "" };
+  c.comps = [{ id: "final", kind: "final", name: "מבחן סוף/פרויקט", w: w.final || 0 },
+    { id: "mid", kind: "mid", name: "מבחן אמצע", w: w.mid || 0, shield: !!c.shield },
+    { id: "hw", kind: "list", name: "שיעורי בית", w: w.hw || 0, n: n.hw || 0, shield: false }];
+  if ((w.proj || 0) > 0 || (c.g.proj || []).length) c.comps.push({ id: "proj", kind: "list", name: "פרויקטים/מעבדות", w: w.proj || 0, n: n.proj || 0, shield: false });
+  c.g.hw = c.g.hw || []; delete c.w; delete c.n; delete c.shield;
+}
+const defaultComps = () => [{ id: "final", kind: "final", name: "מבחן סוף/פרויקט", w: 0 }, { id: "mid", kind: "mid", name: "מבחן אמצע", w: 0, shield: false }, { id: "hw", kind: "list", name: "שיעורי בית", w: 0, n: 0, shield: false }];
 const r1 = x => Math.round(x * 10) / 10;
-const topAvg = (a, n) => { if (!a.length) return null; const t = [...a].sort((x, y) => y - x).slice(0, n > 0 ? n : a.length); return t.reduce((q, x) => q + x, 0) / t.length; };
+const topAvg = (a, n) => { if (!a || !a.length) return null; const t = [...a].sort((x, y) => y - x).slice(0, n > 0 ? n : a.length); return t.reduce((q, x) => q + x, 0) / t.length; };
+const cavg = (c, k) => k.kind === "list" ? topAvg(c.g[k.id], k.n) : (c.g[k.id] ?? null);
+// מגן: רכיב נספר רק אם ציון מבחן הסוף מעל 50 והממוצע שלו גבוה מציון מבחן הסוף. אחרת האחוזים עוברים למבחן הסוף
 function eff(c) {
-  const w = { ...c.w };
-  if (c.shield && w.mid > 0 && c.g.final != null && (c.g.mid == null || c.g.mid <= c.g.final)) { w.final += w.mid; w.mid = 0; }
+  const w = {}; c.comps.forEach(k => w[k.id] = k.w);
+  const fin = c.g.final ?? null;
+  if (fin != null) c.comps.forEach(k => {
+    if (k.kind !== "final" && k.shield && k.w > 0) { const a = cavg(c, k); if (!(fin > 50 && a != null && a > fin)) { w.final += w[k.id]; w[k.id] = 0; } }
+  });
   return w;
 }
-const cavg = (c, k) => (k === "final" || k === "mid") ? c.g[k] : topAvg(c.g[k], c.n[k]);
 function current(c) {
   const w = eff(c); let t = 0, ws = 0;
-  ["final", "mid", "hw", "proj"].forEach(k => { const a = cavg(c, k); if (w[k] > 0 && a != null) { t += a * w[k]; ws += w[k]; } });
+  c.comps.forEach(k => { const a = cavg(c, k); if (w[k.id] > 0 && a != null) { t += a * w[k.id]; ws += w[k.id]; } });
   return ws ? { grade: t / ws, pct: ws } : null;
 }
 function courseCard(c) {
   const w = eff(c);
-  const rows = ["final", "hw", "proj", "mid"].filter(k => c.w[k] > 0).map(k => {
-    const a = cavg(c, k), isList = k === "hw" || k === "proj";
-    let m1 = isList ? `${c.g[k].length}/${c.n[k] || "∞"}` : "";
-    if (!isList && c.d[k]) { const [, mm, dd] = c.d[k].split("-"); m1 = `<span class="dc ${k}">${dd}.${mm}</span>`; }
-    const pc = (w[k] === 0 && c.w[k] > 0) ? `<s>${c.w[k]}%</s>` : `${w[k]}%`;
-    return `<div class="srow"><b>${GL[k]}${k === "mid" && c.shield ? ' <small style="display:inline">(מגן)</small>' : ""}</b><span class="m c">${isList ? "" : m1}</span><span class="lft">${isList ? `<span class="m">${m1}</span>` : ""}<span class="m">${a != null ? r1(a) : "–"}</span><span class="pc">${pc}</span></span></div>`;
+  const ord = [...c.comps.filter(k => k.kind === "final"), ...c.comps.filter(k => k.kind === "list"), ...c.comps.filter(k => k.kind === "mid")];
+  const rows = ord.filter(k => k.w > 0).map(k => {
+    const a = cavg(c, k), isList = k.kind === "list";
+    let date = ""; if (!isList && c.d[k.id]) { const [, mm, dd] = c.d[k.id].split("-"); date = `<span class="dc ${k.id}">${dd}.${mm}</span>`; }
+    const cnt = isList ? `<span class="m">${(c.g[k.id] || []).length}/${k.n || "∞"}</span>` : "";
+    const pc = (w[k.id] === 0 && k.w > 0) ? `<s>${k.w}%</s>` : `${w[k.id]}%`;
+    return `<div class="srow"><b>${esc(k.name)}${k.shield && k.kind !== "final" ? ' <small style="display:inline">(מגן)</small>' : ""}</b><span class="m c">${date}</span><span class="lft">${cnt}<span class="m">${a != null ? r1(a) : "–"}</span><span class="pc">${pc}</span></span></div>`;
   }).join("");
-  const dates = "";
-  const cur = current(c), sum = c.w.final + c.w.mid + c.w.hw + c.w.proj;
+  const cur = current(c), sum = c.comps.reduce((q, k) => q + k.w, 0);
   const items = [];
-  ["final", "mid"].forEach(k => { if (c.g[k] != null) items.push(`<li>${GL[k]}: ${r1(c.g[k])}<button class="x" data-delg="${c.id}|${k}|-1">✕</button></li>`); });
-  ["hw", "proj"].forEach(k => c.g[k].forEach((v, i) => items.push(`<li>${GL[k]} ${i + 1}: ${r1(v)}<button class="x" data-delg="${c.id}|${k}|${i}">✕</button></li>`)));
-  return `<div class="box bw">${BOW}<div class="chead ${dates ? "hasd" : ""}"><b class="cname">${esc(c.name)}</b>${dates ? `<div class="dates">${dates}</div>` : ""}<span class="act"><button class="x" data-ecourse="${c.id}" aria-label="עריכה">✎</button><button class="x" data-dcourse="${c.id}" aria-label="מחיקה">✕</button></span></div>
+  c.comps.forEach(k => {
+    if (k.kind === "list") (c.g[k.id] || []).forEach((v, i) => items.push(`<li>${esc(k.name)} ${i + 1}: ${r1(v)}<button class="x" data-delg="${c.id}|${k.id}|${i}">✕</button></li>`));
+    else if (c.g[k.id] != null) items.push(`<li>${esc(k.name)}: ${r1(c.g[k.id])}<button class="x" data-delg="${c.id}|${k.id}|-1">✕</button></li>`);
+  });
+  return `<div class="box bw">${BOW}<div class="chead"><b class="cname">${esc(c.name)}</b><span class="act"><button class="x" data-ecourse="${c.id}" aria-label="עריכה">✎</button><button class="x" data-dcourse="${c.id}" aria-label="מחיקה">✕</button></span></div>
   <div class="csum">${rows || '<div class="empty" style="padding:8px">לא הוגדרו אחוזים – לחצי על ✎</div>'}</div>
   <div class="cur">${cur ? `ציון עד כה: <b>${r1(cur.grade)}</b> <small>(לפי ${r1(cur.pct)}% מהציון שנבדקו)</small>` : "עוד אין ציונים שהוזנו 🌱"}</div>
   ${sum !== 100 && sum > 0 ? `<small>שימי לב: סכום האחוזים הוא ${sum}% ולא 100%</small>` : ""}
@@ -247,33 +266,47 @@ function renderGrades() {
     (cs.length ? cs.map(courseCard).join("") : `<div class="empty" style="margin-top:20px">עוד אין קורסים 🫧<br>הוסיפי קורס ראשון כדי להתחיל.</div>`) +
     `<div class="foot"><button class="btn ghost" id="addCourse">הוספת קורס</button></div>`;
 }
-let editCid = null;
-const num = id => Math.min(100, Math.max(0, parseFloat($(id).value) || 0));
-function csum() { const t = ["final", "mid", "hw", "proj"].reduce((q, k) => q + num("cw_" + k), 0); $("csumv").textContent = `סה״כ: ${t}%` + (t === 100 ? " ✓" : " (מומלץ 100%)"); }
+let editCid = null, draft = [];
+const clamp = v => Math.min(100, Math.max(0, parseFloat(v) || 0));
+function csum() { const t = [...document.querySelectorAll("#ccomps .cw")].reduce((q, i) => q + clamp(i.value), 0); $("csumv").textContent = `סה״כ: ${t}%` + (t === 100 ? " ✓" : " (מומלץ 100%)"); }
+const FIXED = ["final", "mid", "hw"];
+function compRow(k) {
+  const unit = (cls, v, u, wide) => `<div class="unit${wide ? " w" : ""}"><input type="number" class="${cls}" min="0" max="${cls === "cw" ? 100 : 99}" inputmode="numeric" placeholder="0" value="${v || ""}"><span>${u}</span></div>`;
+  const head = FIXED.includes(k.id) ? `<span>${esc(k.name)}</span>` : `<input type="text" class="cnm" maxlength="30" placeholder="שם סוג הציון" value="${esc(k.name)}"><button class="x" type="button" data-rmcomp="${k.id}" aria-label="הסרה">✕</button>`;
+  return `<div class="cc" data-comp="${k.id}"><div class="lbl">${head}</div><div class="in">${unit("cw", k.w, "%")}${k.kind === "list" ? unit("ccnt", k.n, "עבודות", 1) : ""}${k.kind !== "final" ? `<label class="sh"><input type="checkbox" class="csh" ${k.shield ? "checked" : ""}>מגן</label>` : ""}</div></div>`;
+}
+const renderDraft = () => { $("ccomps").innerHTML = draft.map(compRow).join(""); csum(); };
+function readDraft() {
+  draft = [...document.querySelectorAll("#ccomps .cc")].map(el => {
+    const base = draft.find(x => x.id === el.dataset.comp), nm = el.querySelector(".cnm"), ct = el.querySelector(".ccnt"), sh = el.querySelector(".csh");
+    return { ...base, name: nm ? nm.value : base.name, w: clamp(el.querySelector(".cw").value), n: ct ? Math.max(0, parseInt(ct.value) || 0) : base.n, shield: sh ? sh.checked : false };
+  });
+}
 function openCourse(id) {
   editCid = id; const c = S.courses.find(x => x.id === id);
   $("cdt").textContent = c ? "עריכת קורס" : "קורס חדש";
   $("cn").value = c ? c.name : "";
-  ["final", "mid", "hw", "proj"].forEach(k => $("cw_" + k).value = c && c.w[k] ? c.w[k] : "");
-  $("cn_hw").value = c && c.n.hw ? c.n.hw : ""; $("cn_proj").value = c && c.n.proj ? c.n.proj : "";
-  $("c_shield").checked = !!(c && c.shield); csum(); $("cdlg").showModal();
+  draft = c ? JSON.parse(JSON.stringify(c.comps)) : defaultComps();
+  renderDraft(); $("cdlg").showModal();
 }
 function saveCourse() {
   const name = $("cn").value.trim(); if (!name) { $("cn").focus(); return; }
-  const w = { final: num("cw_final"), mid: num("cw_mid"), hw: num("cw_hw"), proj: num("cw_proj") };
-  const n = { hw: Math.max(0, parseInt($("cn_hw").value) || 0), proj: Math.max(0, parseInt($("cn_proj").value) || 0) };
-  const c = S.courses.find(x => x.id === editCid);
-  if (c) Object.assign(c, { name, w, n, shield: $("c_shield").checked });
-  else S.courses.push({ id: "c" + Date.now(), name, w, n, shield: $("c_shield").checked, d: { mid: "", final: "" }, g: { final: null, mid: null, hw: [], proj: [] } });
+  readDraft();
+  const comps = draft.map(k => ({ ...k, name: (k.name || "").trim() || "סוג ציון" }));
+  let c = S.courses.find(x => x.id === editCid);
+  if (!c) { c = { id: "c" + Date.now(), name, comps, d: { mid: "", final: "" }, g: {} }; S.courses.push(c); }
+  else { c.name = name; c.comps = comps; }
+  const ng = {}; comps.forEach(k => ng[k.id] = k.kind === "list" ? (c.g[k.id] || []) : (c.g[k.id] ?? null)); c.g = ng;
   $("cdlg").close(); save(); render();
 }
 function fillTypes() {
   const c = S.courses.find(x => x.id === $("gc").value); if (!c) return;
-  const o = []; ["final", "mid", "hw", "proj"].forEach(k => { if (c.w[k] > 0) o.push([k, "ציון " + GL[k]]); });
-  ["final", "mid"].forEach(k => { if (c.w[k] > 0) o.push(["d" + k, "תאריך " + GL[k]]); });
-  $("gt").innerHTML = o.map(([v, l]) => `<option value="${v}">${l}</option>`).join(""); toggleG();
+  const o = [];
+  c.comps.forEach(k => { if (k.w > 0) o.push([k.id, "ציון " + k.name]); });
+  c.comps.forEach(k => { if (k.w > 0 && k.kind !== "list") o.push(["d:" + k.id, "תאריך " + k.name]); });
+  $("gt").innerHTML = o.map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join(""); toggleG();
 }
-function toggleG() { const d = $("gt").value.startsWith("d"); $("gdw").style.display = d ? "" : "none"; $("gvw").style.display = d ? "none" : ""; }
+function toggleG() { const d = $("gt").value.startsWith("d:"); $("gdw").style.display = d ? "" : "none"; $("gvw").style.display = d ? "none" : ""; }
 function openGrade() {
   if (!S.courses.length) { alert("קודם הוסיפי קורס 🌷"); return; }
   $("gc").innerHTML = [...S.courses].sort((a, b) => heSort(a.name, b.name)).map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
@@ -281,11 +314,11 @@ function openGrade() {
 }
 function saveGrade() {
   const c = S.courses.find(x => x.id === $("gc").value), k = $("gt").value; if (!c || !k) return;
-  if (k[0] === "d") { if (!$("gdt").value) { $("gdt").focus(); return; } c.d[k.slice(1)] = $("gdt").value; }
+  if (k.startsWith("d:")) { if (!$("gdt").value) { $("gdt").focus(); return; } c.d[k.slice(2)] = $("gdt").value; }
   else {
     const v = parseFloat($("gv").value); if (isNaN(v)) { $("gv").focus(); return; }
-    const x = Math.min(100, Math.max(0, v));
-    if (k === "hw" || k === "proj") c.g[k].push(x); else c.g[k] = x;
+    const x = Math.min(100, Math.max(0, v)), comp = c.comps.find(q => q.id === k);
+    if (comp.kind === "list") (c.g[k] = c.g[k] || []).push(x); else c.g[k] = x;
   }
   $("gdlg").close(); save(); render();
 }
@@ -390,6 +423,8 @@ document.addEventListener("click", e => {
   else if (g.dataset.ecourse) openCourse(g.dataset.ecourse);
   else if (g.dataset.dcourse) { if (confirm("למחוק את הקורס וכל הציונים שלו?")) { S.courses = S.courses.filter(c => c.id !== g.dataset.dcourse); save(); render(); } }
   else if (g.dataset.delg) { const [id, k, i] = g.dataset.delg.split("|"); const c = S.courses.find(x => x.id === id); if (c) { if (+i >= 0) c.g[k].splice(+i, 1); else c.g[k] = null; save(); render(); } }
+  else if (g.id === "addComp") { readDraft(); draft.push({ id: "x" + Date.now() + Math.floor(Math.random() * 99), kind: "list", name: "", w: 0, n: 0, shield: false }); renderDraft(); }
+  else if (g.dataset.rmcomp) { readDraft(); draft = draft.filter(k => k.id !== g.dataset.rmcomp); renderDraft(); }
   else if (g.id === "csave") saveCourse();
   else if (g.id === "ccancel") $("cdlg").close();
   else if (g.id === "gsave") saveGrade();
